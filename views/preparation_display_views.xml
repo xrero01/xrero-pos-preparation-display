@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Preparation Display Form View -->
+    <record id="pos_preparation_display_form" model="ir.ui.view">
+        <field name="name">pos.preparation.display.form</field>
+        <field name="model">pos.preparation.display</field>
+        <field name="arch" type="xml">
+            <form string="Preparation Display">
+                <header>
+                    <button name="action_open_preparation_screen"
+                            string="Open Display Screen"
+                            type="object"
+                            class="oe_highlight"
+                            icon="fa-desktop"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="e.g., Kitchen Display #1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Configuration">
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="POS Shops" name="shops">
+                            <field name="pos_config_ids" widget="many2many_tags"
+                                   placeholder="Leave empty for all shops"/>
+                            <p class="text-muted">
+                                Select which POS shops feed orders to this display.
+                                Leave empty to show orders from all shops.
+                            </p>
+                        </page>
+                        <page string="Categories" name="categories">
+                            <field name="pos_category_ids" widget="many2many_tags"
+                                   placeholder="Leave empty for all categories"/>
+                            <p class="text-muted">
+                                Filter which product categories appear on this display.
+                                Leave empty to show all categories.
+                            </p>
+                        </page>
+                        <page string="Stages" name="stages">
+                            <field name="stage_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="color" widget="color_picker"/>
+                                    <field name="fold"/>
+                                </tree>
+                            </field>
+                            <p class="text-muted">
+                                Define the preparation stages for this display.
+                                Orders will progress through these stages from left to right.
+                            </p>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Preparation Display Tree View -->
+    <record id="pos_preparation_display_tree" model="ir.ui.view">
+        <field name="name">pos.preparation.display.tree</field>
+        <field name="model">pos.preparation.display</field>
+        <field name="arch" type="xml">
+            <tree string="Preparation Displays">
+                <field name="name"/>
+                <field name="order_count" string="Active Orders"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Preparation Display Action -->
+    <record id="pos_preparation_display_action" model="ir.actions.act_window">
+        <field name="name">Preparation Displays</field>
+        <field name="res_model">pos.preparation.display</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Preparation Display
+            </p>
+            <p>
+                Set up kitchen or bar displays to track POS order preparation in real-time.
+            </p>
+        </field>
+    </record>
+</odoo>
