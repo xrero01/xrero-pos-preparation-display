@@ -19,6 +19,8 @@
                         </group>
                         <group string="Preparation">
                             <field name="note" placeholder="Order notes..."/>
+                            <field name="duration_display" string="Time in Stage"/>
+                            <field name="stage_changed_at" readonly="1"/>
                             <field name="color" widget="color_picker"/>
                         </group>
                     </group>
@@ -54,20 +56,22 @@
                 <field name="product_names"/>
                 <field name="note"/>
                 <field name="order_date"/>
+                <field name="duration_display"/>
+                <field name="duration_minutes"/>
                 <templates>
                     <t t-name="kanban-box">
                         <div t-attf-class="#{!selection_mode ? kanban_color(record.color.raw_value) : ''} oe_kanban_card oe_kanban_global_click">
                             <div class="oe_kanban_content">
-                                <div class="o_kanban_record_top mb8">
+                                <div class="o_kanban_record_top mb4">
                                     <div class="o_kanban_record_headings">
                                         <strong class="o_kanban_record_title">
                                             <field name="order_reference"/>
                                         </strong>
                                     </div>
                                     <div class="o_kanban_record_top_right">
-                                        <small>
-                                            <field name="order_date" widget="datetime"/>
-                                        </small>
+                                        <span t-attf-class="badge #{record.duration_minutes.raw_value > 30 ? 'text-bg-danger' : record.duration_minutes.raw_value > 15 ? 'text-bg-warning' : 'text-bg-info'}">
+                                            <i class="fa fa-clock-o"/> <field name="duration_display"/>
+                                        </span>
                                     </div>
                                 </div>
                                 <div class="o_kanban_record_body">
@@ -79,7 +83,11 @@
                                     </em>
                                 </div>
                                 <div class="o_kanban_record_bottom mt8">
-                                    <div class="oe_kanban_bottom_left"/>
+                                    <div class="oe_kanban_bottom_left">
+                                        <small class="text-muted">
+                                            <field name="order_date" widget="datetime"/>
+                                        </small>
+                                    </div>
                                     <div class="oe_kanban_bottom_right">
                                         <button name="action_next_stage"
                                                 type="object"

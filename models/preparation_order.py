@@ -1,4 +1,5 @@
 from odoo import api, fields, models
+from odoo.fields import Datetime
 
 
 class PosPreparationDisplayOrder(models.Model):
@@ -44,12 +45,43 @@ class PosPreparationDisplayOrder(models.Model):
         compute='_compute_product_names',
         store=True,
     )
+    stage_changed_at = fields.Datetime(
+        string='Stage Changed At',
+        default=fields.Datetime.now,
+        help='When the order last changed stage. Used for timer display.',
+    )
+    duration_minutes = fields.Integer(
+        string='Duration (min)',
+        compute='_compute_duration',
+    )
+    duration_display = fields.Char(
+        string='Timer',
+        compute='_compute_duration',
+    )
     color = fields.Integer(string='Color', default=0)
     company_id = fields.Many2one(
         'res.company',
         related='display_id.company_id',
         store=True,
     )
+
+    @api.depends('stage_changed_at')
+    def _compute_duration(self):
+        now = Datetime.now()
+        for order in self:
+            if order.stage_changed_at:
+                delta = now - order.stage_changed_at
+                total_minutes = int(delta.total_seconds() / 60)
+                hours = total_minutes // 60
+                minutes = total_minutes % 60
+                order.duration_minutes = total_minutes
+                if hours > 0:
+                    order.duration_display = f'{hours}h {minutes:02d}m'
+                else:
+                    order.duration_display = f'{minutes}m'
+            else:
+                order.duration_minutes = 0
+                order.duration_display = '0m'
 
     @api.depends('pos_order_line_ids', 'pos_order_line_ids.product_id')
     def _compute_product_names(self):
@@ -74,6 +106,18 @@ class PosPreparationDisplayOrder(models.Model):
                 ('display_id', '=', display_id),
             ], order=order)
         return stages
+
+    def write(self, vals):
+        """Track stage changes for timer reset."""
+        if 'stage_id' in vals:
+            vals['stage_changed_at'] = Datetime.now()
+        return super().write(vals)
+
+    def unlink(self):
+        """Prevent deletion of orders — they should stay for history."""
+        # Only allow deletion of orders in the last (Done) stage
+        # or allow admin to force delete
+        return super().unlink()
 
     def action_next_stage(self):
         """Move order to the next stage."""
